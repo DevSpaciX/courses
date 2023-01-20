@@ -3,91 +3,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% block css %}
-  <link rel="stylesheet" href="{% static 'card_styles.css' %}">
-  {% endblock %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">  <title>Title</title>
+    {% block css %}
+        <link rel="stylesheet" href="{% static 'card_styles.css' %}">
+    {% endblock %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+          integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <title>Title</title>
 
 </head>
 <style type="text/css">
-   body { background: gainsboro !important;} /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
+    body {
+        background: gainsboro !important;
+    }
+
+    /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
 </style>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">SpaceAcademy</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarScroll">
-    <ul class="navbar-nav mr-auto my-2 my-lg-0 navbar-nav-scroll" style="max-height: 100px;">
-      <li class="nav-item active">
-        <a class="nav-link" href="{% url "course:home-page" %}">Home <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'course:profile' %}">Profile</a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-          Categories
-        </a>
-        <ul class="dropdown-menu">
-          {% for category in categories %}
-            <li><a class="dropdown-item" href="{% url "course:category" pk=category.pk %}">{{ category.title }}</a></li>
-          {% endfor %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">SpaceAcademy</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarScroll"
+            aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarScroll">
+        <ul class="navbar-nav mr-auto my-2 my-lg-0 navbar-nav-scroll" style="max-height: 100px;">
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url "course:home-page" %}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'course:profile' %}">Profile</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
+                    Categories
+                </a>
+                <ul class="dropdown-menu">
+                    {% for category in categories %}
+                        <li><a class="dropdown-item"
+                               href="{% url "course:category" pk=category.pk %}">{{ category.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled">Link</a>
+            </li>
         </ul>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link disabled">Link</a>
-      </li>
-    </ul>
-    <form style="padding-right: 10px" class="d-flex">
-      {% if user.is_authenticated %}
-        <a style="padding-right: 10px" class="btn btn-danger" href="{% url "course:logout" %}" role="button">Logout</a>
-      {% else %}
-      <a  class="btn btn-danger mr-sm-2" href="{% url "course:login" %}" role="button"> Login</a>
-        <a class="btn btn-primary" href="{% url "course:register" %}" role="button">Register</a>
-      {% endif %}
-    </form>
-  </div>
+        <form style="padding-right: 10px" class="d-flex">
+            {% if user.is_authenticated %}
+                <a style="padding-right: 10px" class="btn btn-danger" href="{% url "course:logout" %}" role="button">Logout</a>
+            {% else %}
+                <a class="btn btn-danger mr-sm-2" href="{% url "course:login" %}" role="button"> Login</a>
+                <a class="btn btn-primary" href="{% url "course:register" %}" role="button">Register</a>
+            {% endif %}
+        </form>
+    </div>
 </nav>
 
-  {% block content %}
+{% block content %}
     <div class="container">
-    <div class="row mx-auto">
-      <div class="col-md3">
-      </div>
+        <div class="row mx-auto">
+            <div class="col-md3">
+            </div>
 
 
-  {% for course in course_list %}
-  <div style="border-radius: 15px" class="custom-card">
-    <div class="custom-card-header">
-      <img style="width: border-box" src="{{ course.image.url }}" alt="image"/>
+            {% for course in course_list %}
+                <div style="border-radius: 15px" class="custom-card">
+                    <div class="custom-card-header">
+                        <img style="width: border-box" src="{{ course.image.url }}" alt="image"/>
+                    </div>
+                    <div class="card-body">
+                        <span class="tag tag-teal">{{ course.categories.title }}</span>
+                        <h4>
+                            {{ course.title }}
+                        </h4>
+                        <p style="font-family: 'Open Sans SemiBold',sans-serif">
+                            {{ course.description }} <br>
+
+                            Читают: {{ course.course.count }}
+
+
+                        </p>
+                        <a href="{% url "course:detail-page" pk=course.pk %}" class="btn btn-primary">Подписаться</a>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
     </div>
-    <div class="card-body">
-      <span class="tag tag-teal">{{ course.categories.title }}</span>
-      <h4>
-        {{ course.title }}
-      </h4>
-      <p style="font-family: 'Open Sans SemiBold',sans-serif">
-        {{ course.description }} <br>
-
-        Читают: {{ course.course.count }}
+{% endblock %}
 
 
-      </p>
-      <a href="{% url "course:detail-page" pk=course.pk %}" class="btn btn-primary">Подписаться</a>
-      </div>
-    </div>
-
-  {% endfor %}
-</div>
-    </div>
-  {% endblock %}
-
-
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
 </body>
 </html>

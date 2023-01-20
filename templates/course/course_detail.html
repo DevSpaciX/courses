@@ -1,37 +1,73 @@
 {% extends "course/base.html" %}
 {% load static %}
 {% block css %}
-  <link rel="stylesheet" href="{% static 'detail.css' %}">
+    <link rel="stylesheet" href="{% static 'detail.css' %}">
 {% endblock %}
 {% block content %}
     <div class="container">
-    <div class="row mx-auto">
-      <div class="col-md3">
-      </div>
-      <div class="container-fluid">
-  <div class="row">
-    <div class="col-10 offset-1">
-      <h2 style="text-align: center">Frequently Asked Questions</h2>
-      <br />
-      {% for lecture in lectures %}
-        <details>
-          <summary>{{ lecture.title }}</summary>
-          <p> {{ lecture.text }}</p>
-          <p> Homework : {{ lecture.home_work }}</p>
-        </details>
-{#        <details>#}
-{#          <summary>Where does it come from?</summary>#}
-{#          <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p>#}
-{#        </details>#}
-{#        <details>#}
-{#          <summary>Why do we use it?</summary>#}
-{#          <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).</p>#}
-{#        </details>#}
-      {% endfor %}
+        <div class="row mx-auto">
+            <div class="col-md3">
+            </div>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-10 offset-1">
+                        <h2 style="text-align: center">Frequently Asked Questions</h2>
+                        <br/>
+                        {{ course.title }}
+                        {% if course in user.course_paid.all %}
+                            {% for lecture in lectures %}
+                                <details>
+                                    <summary>{{ lecture.title }}</summary>
+                                    <p> {{ lecture.text }}</p>
+                                    <p> Homework : {{ lecture.home_work }}</p>
+                                </details>
+                            {% endfor %}
+                        {% else %}
+                            <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+                            <script src="https://js.stripe.com/v3/"></script>
+                            <style>
+                            </style>
+                            <section>
+                                <div class="product">
+                                    <div class="description">
+                                        <h3>{{ product.name }}</h3>
+                                        <h5>${{ product.get_display_price }}</h5>
+                                    </div>
+                                </div>
+                                <button class="btn-primary" type="button" id="checkout-button">Buy</button>
+                            </section>
+                            {% csrf_token %}
+                            <script type="text/javascript">
+                                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+                                var checkoutButton = document.getElementById("checkout-button");
+                                checkoutButton.addEventListener("click", function () {
+                                    fetch("{% url 'course:detail-page' product.id %}", {
+                                        method: "POST",
+                                        headers: {
+                                            'X-CSRFToken': csrftoken
+                                        }
+                                    })
+                                        .then(function (response) {
+                                            return response.json();
+                                        })
+                                        .then(function (session) {
+                                            return stripe.redirectToCheckout({sessionId: session.id});
+                                        })
+                                        .then(function (result) {
+                                            if (result.error) {
+                                                alert(result.error.message);
+                                            }
+                                        })
+                                        .catch(function (error) {
+                                            console.error("Error:", error);
+                                        });
+                                });
+                            </script>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-</div>
-</div>
-    </div>
-  {% endblock %}
+{% endblock %}
