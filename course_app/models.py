@@ -8,8 +8,11 @@ from embed_video.fields import EmbedVideoField
 
 
 class User(AbstractUser):
-    paid_course = models.ForeignKey("Course",on_delete=models.PROTECT,blank=True,null=True)
+    # paid_course = models.ForeignKey("Course",on_delete=models.PROTECT,blank=True,null=True)
     image = models.ImageField(upload_to='images/', default='hqdefault.jpg')
+    course_paid = models.ManyToManyField("Course",blank=True)
+
+
 
 
 class Comment(models.Model):

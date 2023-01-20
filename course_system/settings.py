@@ -134,7 +134,7 @@ LOGIN_REDIRECT_URL = ""
 
 STRIPE_PUBLIC_KEY = 'pk_test_51MRyslKDczZ74E9aOuP5Ip76DHi7o3xUaQPltR0CKteHO6KUMg92NOqf4DF3Y6NGTj7zOZW9uQKtMjvTsrz6LAmH00l9m3RgdA'
 STRIPE_SECRET_KEY = 'sk_test_51MRyslKDczZ74E9anUtqmZvN3bUubk1NPoiHb1twZq2EtHyt4SZM2L8T9ZvPwdDOlnA6GbKdNlfskBbI0iUOCL0i00DP5Gi0yg'
-
+STRIPE_ENDPOINT_SECRET = "whsec_d37f7dd461760acc5b615a412f3b082d40299c04c9d9eedcb7edb101bafbb531"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

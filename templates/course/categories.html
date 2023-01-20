@@ -1,26 +1,26 @@
 {% extends "course/base.html" %}
 {% block content %}
 
-  {% for course in course_list %}
-  <div style="border-radius: 15px" class="custom-card">
-    <div class="custom-card-header">
-      <img style="width: border-box" src="{{ course.image.url }}" alt="image"/>
-    </div>
-    <div class="card-body">
-      <span class="tag tag-teal">{{ course.categories.title }}</span>
-      <h4>
-        {{ course.title }}
-      </h4>
-      <p style="font-family: 'Open Sans SemiBold',sans-serif">
-        {{ course.description }} <br>
+    {% for course in course_list %}
+        <div style="border-radius: 15px" class="custom-card">
+            <div class="custom-card-header">
+                <img style="width: border-box" src="{{ course.image.url }}" alt="image"/>
+            </div>
+            <div class="card-body">
+                <span class="tag tag-teal">{{ course.categories.title }}</span>
+                <h4>
+                    {{ course.title }}
+                </h4>
+                <p style="font-family: 'Open Sans SemiBold',sans-serif">
+                    {{ course.description }} <br>
 
-        Читают: {{ course.course.count }}
+                    Читают: {{ course.course.count }}
 
 
-      </p>
-      <a href="#" class="btn btn-primary">Подписаться</a>
-      </div>
-    </div>
+                </p>
+                <a href="#" class="btn btn-primary">Подписаться</a>
+            </div>
+        </div>
 
-  {% endfor %}
-  {% endblock %}
+    {% endfor %}
+{% endblock %}
