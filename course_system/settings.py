@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     "course_app",
     "embed_video",
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +58,7 @@ ROOT_URLCONF = "course_system.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR/"templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -65,6 +66,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "course_app.context_processor.context"
             ],
         },
     },
@@ -119,7 +121,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR/ "static"
+]
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_URL = '/media/'
 AUTH_USER_MODEL = "course_app.User"
+LOGIN_REDIRECT_URL = ""
+
+
+STRIPE_PUBLIC_KEY = 'pk_test_51MRyslKDczZ74E9aOuP5Ip76DHi7o3xUaQPltR0CKteHO6KUMg92NOqf4DF3Y6NGTj7zOZW9uQKtMjvTsrz6LAmH00l9m3RgdA'
+STRIPE_SECRET_KEY = 'sk_test_51MRyslKDczZ74E9anUtqmZvN3bUubk1NPoiHb1twZq2EtHyt4SZM2L8T9ZvPwdDOlnA6GbKdNlfskBbI0iUOCL0i00DP5Gi0yg'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
