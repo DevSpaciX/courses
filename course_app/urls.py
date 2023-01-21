@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from course_app.views import ListOfCourses, CreateUser, login_view, logout_view, profile, EditProfileView, \
-    CourseByCategory, CancelView, SuccessView, DetailCourses, stripe_webhook
+    CourseByCategory, CancelView, SuccessView, DetailCourses, stripe_webhook, comments
 
 urlpatterns = [
 
@@ -23,6 +23,8 @@ urlpatterns = [
     path("category/<int:pk>/",CourseByCategory.as_view(),name="category"),
     path("course/detail/<int:pk>/",DetailCourses.as_view(),name="detail-page"),
     path('webhook/', stripe_webhook),
+    path('comments/', comments),
+
     # path('intent/<int:pk>/', StripeIntentView.as_view(),name="create-payment-intent"),
 
 

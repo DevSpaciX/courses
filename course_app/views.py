@@ -168,3 +168,7 @@ def stripe_webhook(request):
         user.save()
 
     return HttpResponse(status=200)
+
+def comments(request):
+    return render(request,"course/comments.html")
+
