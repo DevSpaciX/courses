@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import stripe
@@ -5,14 +6,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.db.models import Count, F
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
-from course_app.forms import CustomUserCreationForm
-from course_app.models import Course, Category, Lecture
+from course_app.forms import CustomUserCreationForm, CommentCourseFrom
+from course_app.models import Course, Category, Lecture, Comment
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -29,6 +31,11 @@ class ListOfCourses(generic.ListView):
     model = Course
     template_name = "course/base.html"
 
+    def get_queryset(self):
+        return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10]
+
+
+
 
 class DetailCourses(generic.DetailView):
     model = Course
@@ -38,45 +45,41 @@ class DetailCourses(generic.DetailView):
         product = Course.objects.get(pk=self.kwargs["pk"])
         lectures = Lecture.objects.filter(course_id=self.kwargs["pk"])
         context = super(DetailCourses, self).get_context_data(**kwargs)
-        context.update({
-            "lectures": lectures,
-            "product": product,
-            "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY
-
-        })
+        context.update(
+            {
+                "lectures": lectures,
+                "product": product,
+                "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
+            }
+        )
         return context
+
     def post(self, request, *args, **kwargs):
         user = request.user.pk
         product_id = self.kwargs["pk"]
         product = Course.objects.get(id=product_id)
         YOUR_DOMAIN = "http://127.0.0.1:8000"
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
+            payment_method_types=["card"],
             line_items=[
                 {
-                    'price_data': {
-                        'currency': 'usd',
-                        'unit_amount': product.price,
-                        'product_data': {
-                            'name': product.title,
+                    "price_data": {
+                        "currency": "usd",
+                        "unit_amount": product.price,
+                        "product_data": {
+                            "name": product.title,
                             # 'images': ['https://i.imgur.com/EHyR2nP.png'],
                         },
                     },
-                    'quantity': 1,
+                    "quantity": 1,
                 },
             ],
-            metadata={
-                "product_id": product.id,
-                "user_id": user
-            },
-            mode='payment',
-            success_url=YOUR_DOMAIN + '/success/',
-            cancel_url=YOUR_DOMAIN + '/cancel/',
+            metadata={"product_id": product.id, "user_id": user},
+            mode="payment",
+            success_url=YOUR_DOMAIN + "/success/",
+            cancel_url=YOUR_DOMAIN + "/cancel/",
         )
-        return JsonResponse({
-            'id': checkout_session.id
-        })
-
+        return JsonResponse({"id": checkout_session.id})
 
 
 class CreateUser(generic.CreateView):
@@ -87,31 +90,30 @@ class CreateUser(generic.CreateView):
 
     def form_valid(self, form):
         form.save()
-        username = self.request.POST['username']
-        password = self.request.POST['password1']
+        username = self.request.POST["username"]
+        password = self.request.POST["password1"]
         image = self.request.FILES
         # authenticate user then login
-        user = authenticate(username=username, password=password,image=image)
+        user = authenticate(username=username, password=password, image=image)
         login(self.request, user)
         return HttpResponseRedirect(reverse("course:home-page"))
 
 
 def login_view(request):
     if request.method == "GET":
-        return render(request,"course/login.html")
+        return render(request, "course/login.html")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        user = authenticate(username=username,password=password)
+        user = authenticate(username=username, password=password)
 
         if user:
-            login(request,user)
+            login(request, user)
             return HttpResponseRedirect(reverse("course:home-page"))
         else:
-            error_context = {
-                "errors":"invalid data"
-            }
-            return render(request,"course/login.html",context=error_context)
+            error_context = {"errors": "invalid data"}
+            return render(request, "course/login.html", context=error_context)
+
 
 def logout_view(request):
     logout(request)
@@ -121,34 +123,34 @@ def logout_view(request):
 class EditProfileView(generic.UpdateView):
     model = get_user_model()
     template_name = "course/profile_update.html"
-    fields = ["username","image"]
-    success_url = reverse_lazy("course:profile")
+    fields = ["username", "image"]
 
-
-def profile(request):
-    return render(request,"course/profile.html")
+    def get_success_url(self):
+        user_id = self.kwargs['pk']
+        return reverse_lazy('course:profile', kwargs={'pk': user_id})
+def profile(request, pk):
+    request.user.pk = pk
+    return render(request, "course/profile.html")
 
 
 class CourseByCategory(generic.ListView):
     model = Course
     template_name = "course/base.html"
+
     def get_queryset(self):
-        return (
-            Course.objects.filter(categories_id=self.kwargs["pk"])
-        )
+        return Course.objects.filter(categories_id=self.kwargs["pk"]).annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10]
+
 
 @csrf_exempt
 def stripe_webhook(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     endpoint_secret = settings.STRIPE_ENDPOINT_SECRET
     payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
     event = None
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except ValueError as e:
         # Invalid payload
         return HttpResponse(status=400)
@@ -157,8 +159,8 @@ def stripe_webhook(request):
         return HttpResponse(status=400)
 
     # Handle the checkout.session.completed event
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
         # handle_checkout_session(session)
         product_id = session["metadata"]["product_id"]
         user_id = session["metadata"]["user_id"]
@@ -169,6 +171,51 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
-def comments(request):
-    return render(request,"course/comments.html")
 
+def course_comments(request, pk):
+    if request.method == "GET":
+        comments = Comment.objects.filter(course_id=pk)
+        context = {
+            "comments": comments,
+        }
+        return render(request, "course/comments.html", context=context)
+    if request.method == "POST":
+        creation_form = CommentCourseFrom(request.POST or None)
+        if creation_form.is_valid():
+            print("POST")
+            sender = request.user
+            content = request.POST.get("content")
+            created_at = datetime.datetime.now()
+            comment = Comment.objects.create(
+                sender=sender,
+                content=content,
+                created_at=created_at,
+                course_id=pk,
+            )
+            comment.save()
+            return HttpResponseRedirect(reverse("course:home-page"))
+        else:
+            return render(request, "course/base.html")
+
+
+
+# def post_detail_view(request, pk):
+#     if request.method == "GET":
+#         post = Post.objects.get(id=pk)
+#         context = {"post": post}
+#         return render(request, "blog/post_detail.html", context=context)
+#     if request.method == "POST":
+#         creation_form = CommentForm(request.POST or None)
+#         if creation_form.is_valid():
+#             content = request.POST.get("content")
+#             comment = Commentary.objects.create(
+#                 post=Post.objects.get(id=pk),
+#                 user=request.user, content=content
+#             )
+#             comment.save()
+#             return HttpResponseRedirect(reverse("blog:index"))
+#
+#         else:
+#             post = Post.objects.get(id=pk)
+#             context = {"error": "Comment should not be empty!", "post": post}
+#             return render(request, "blog/post_detail.html", context=context)

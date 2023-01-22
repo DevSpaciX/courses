@@ -9,7 +9,7 @@
 
                 <form action="{% url "course:login" %}" method="post">
                     {% if errors %}
-                        <h5>{{ errors }}</h5>
+                        <h5 style="color: darkred;text-align: center;margin-top: 10px">{{ errors }}</h5>
                     {% endif %}
                     {% csrf_token %}
                     <div style="margin-top: 20px" class="form-group">

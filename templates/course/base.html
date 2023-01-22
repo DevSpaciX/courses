@@ -32,9 +32,11 @@
             <li class="nav-item active">
                 <a class="nav-link" href="{% url "course:home-page" %}">Home <span class="sr-only">(current)</span></a>
             </li>
+        {% if user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'course:profile' %}">Profile</a>
+                <a class="nav-link" href="{% url 'course:profile' pk=user.pk %}">Profile</a>
             </li>
+        {% endif %}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
                     Categories
@@ -81,11 +83,12 @@
                         <p style="font-family: 'Open Sans SemiBold',sans-serif">
                             {{ course.description }} <br>
 
-                            Читают: {{ course.course.count }}
+                            Читают: {{ course.user_course.count }}
 
 
                         </p>
                         <a href="{% url "course:detail-page" pk=course.pk %}" class="btn btn-primary">Подписаться</a>
+                        <a href="{% url "course:comments" pk=course.pk %}" class="btn btn-primary">Отзывы</a>
                     </div>
                 </div>
 

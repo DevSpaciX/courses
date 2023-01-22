@@ -10,19 +10,22 @@
 
             <div class="col-md-7">
 
-                <div class="card p-3 py-4">
+                <div style="border-radius: 20px ;background-color: #F0F0F0; !important;" class="card p-3 py-4">
 
                     <div class="text-center">
-                        <img src="{{ user.image.url }}" width="100" class="rounded-circle">
+                        <img style="border-radius: 20px" src="{{ user.image.url }}" width="100" >
                     </div>
 
                     <div class="text-center mt-3">
                         <span class="bg-secondary p-1 px-4 rounded text-white">Pro</span>
                         <h5 class="mt-2 mb-0">{{ user.username }}</h5>
-                        <span>Your active courses:
-                        <li>
-                          {{ user.paid_course }}
-                        </li></span>
+                      {% if user.course_paid %}
+                        <span>Active courses:</span>
+                        {% for course in user.course_paid.all  %}
+                          <li>{{ course.title }}
+                        </li>
+                        {% endfor %}
+                      {% endif %}
 
                         <div class="px-4 mt-1">
                             <p class="fonts">Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et

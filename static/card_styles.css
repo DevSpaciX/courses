@@ -3,6 +3,9 @@
   box-sizing: border-box;
 }
 
+p {
+  max-height: 156px;
+}
 body {
   display: inline;
   /*justify-content: center;*/
@@ -36,8 +39,8 @@ body {
   object-fit: cover;
 }
 .card-body {
-  height: 312px;
-  display: flex;
+  /*height: 312px;*/
+  /*display: flex;*/
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
