@@ -3,9 +3,13 @@
 body {
   color: #333333;
 }
+p {
+   margin-bottom: 13rem !important;
+}
 
 details {
   position: relative;
+
 }
 
 details summary::-webkit-details-marker {
@@ -53,7 +57,8 @@ details[open] > summary ~ * {
 p.source {
   padding-top: 50px;
   font-size: 0.75em;
-  text-align: center;
+  text-align: justify-all;
+  margin-bottom: 7rem;
 }
 
 @keyframes open {

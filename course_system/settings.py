@@ -37,10 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "course_app",
     "embed_video",
-    'crispy_forms',
+    "crispy_forms",
 ]
 
 MIDDLEWARE = [
@@ -58,7 +57,7 @@ ROOT_URLCONF = "course_system.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR/"templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -66,7 +65,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "course_app.context_processor.context"
+                "course_app.context_processor.context",
             ],
         },
     },
@@ -121,20 +120,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR/ "static"
-]
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+MEDIA_URL = "/media/"
 AUTH_USER_MODEL = "course_app.User"
 LOGIN_REDIRECT_URL = ""
 
 
-STRIPE_PUBLIC_KEY = 'pk_test_51MRyslKDczZ74E9aOuP5Ip76DHi7o3xUaQPltR0CKteHO6KUMg92NOqf4DF3Y6NGTj7zOZW9uQKtMjvTsrz6LAmH00l9m3RgdA'
-STRIPE_SECRET_KEY = 'sk_test_51MRyslKDczZ74E9anUtqmZvN3bUubk1NPoiHb1twZq2EtHyt4SZM2L8T9ZvPwdDOlnA6GbKdNlfskBbI0iUOCL0i00DP5Gi0yg'
-STRIPE_ENDPOINT_SECRET = "whsec_d37f7dd461760acc5b615a412f3b082d40299c04c9d9eedcb7edb101bafbb531"
+STRIPE_PUBLIC_KEY = "pk_test_51MRyslKDczZ74E9aOuP5Ip76DHi7o3xUaQPltR0CKteHO6KUMg92NOqf4DF3Y6NGTj7zOZW9uQKtMjvTsrz6LAmH00l9m3RgdA"
+STRIPE_SECRET_KEY = "sk_test_51MRyslKDczZ74E9anUtqmZvN3bUubk1NPoiHb1twZq2EtHyt4SZM2L8T9ZvPwdDOlnA6GbKdNlfskBbI0iUOCL0i00DP5Gi0yg"
+STRIPE_ENDPOINT_SECRET = (
+    "whsec_d37f7dd461760acc5b615a412f3b082d40299c04c9d9eedcb7edb101bafbb531"
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

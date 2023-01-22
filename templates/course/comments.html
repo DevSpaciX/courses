@@ -1,0 +1,64 @@
+{% extends "course/base.html" %}
+{% load static %}{% block css %}
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'comments.css' %}">
+        {% endblock %}
+{% block content %}
+<section class="content-item" id="comments">
+    <div class="container">
+    	<div class="row">
+      <div class="col-sm-1">
+      </div>
+            <div class="col-sm-10">
+            <form method="post">
+              {% if user.is_authenticated %}
+                	<h3 class="pull-left">Add new comment!</h3>
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-sm-3 col-lg-2 hidden-xs">
+                            	<img style="width: 100px;height: 100px;margin-top: 25px" class="img-responsive" src="{{ user.image.url }}" alt="">
+                            </div>
+                            <div class="form-group col-xs-12 col-sm-9 col-lg-10">
+                                {% csrf_token %}
+                              <label for="message"></label><textarea class="form-control" id="message" placeholder="Your message" required="" name="content"></textarea>
+                                <input class="btn btn-success pull-right" type="submit" value="Add comment">
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                    {% else %}
+                    <h5 style="text-align: center">To see leave comments - login first</h5>
+                <a style="margin-left: 430px" class="btn btn-success mr-sm-2" href="{% url "course:login" %}" role="button"> Login</a>
+
+                  {% endif %}
+                {% if comments %}
+                  <h3>{{ comments.count }} Comments</h3>
+                  {% else %}
+                  <h3>There is no comments,become first!</h3>
+                {% endif %}
+
+
+
+                {% for comment in comments %}
+                <!-- COMMENT 1 - START -->
+                <div class="media">
+                    <a class="pull-left" href="#"><img class="media-object" src="{{ comment.sender.image.url }}" alt=""></a>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                          <a href="{% url "course:profile" pk=comment.sender.pk %}">{{ comment.sender}}</a></h4>
+                      <p>{{ comment.content}}</p>
+                        <ul class="list-unstyled list-inline media-detail pull-left">
+                            <li><i class="fa fa-calendar"></i>{{ comment.created_at }}</li>
+                        </ul>
+                        <ul class="list-unstyled list-inline media-detail pull-right">
+                        </ul>
+                    </div>
+                </div>
+                <!-- COMMENT 1 - END -->
+            {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
