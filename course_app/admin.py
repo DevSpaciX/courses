@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from embed_video.admin import AdminVideoMixin
-from .models import LectureVideo, Lecture, Category, User, Comment, Course
+from .models import LectureVideo, Lecture, Category, User, Comment, Course, Homework, Payment
 
 
 class MyModelAdmin(AdminVideoMixin, admin.ModelAdmin):
@@ -15,7 +15,6 @@ admin.site.register(Comment)
 
 @admin.register(User)
 class SuperUser(UserAdmin):
-    # list_display = UserAdmin.list_display + ("paid_course",)
     list_display = UserAdmin.list_display + ("get_course",)
 
     def get_course(self, obj):
@@ -28,12 +27,16 @@ class SuperUser(UserAdmin):
                 "fields": (
                     "image",
                     "course_paid",
+                    "listened_lecture",
+                    "rework_lecture",
                 )
             },
         ),
     )
 
 
+admin.site.register(Payment)
+admin.site.register(Homework)
 admin.site.register(Category)
 admin.site.register(Lecture)
 admin.site.register(LectureVideo, MyModelAdmin)

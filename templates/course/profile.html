@@ -22,9 +22,17 @@
                       {% if user.course_paid %}
                         <span>Active courses:</span>
                         {% for course in user.course_paid.all  %}
-                          <li>{{ course.title }}
+                          <li>{{ course.title }} <br>
+                            All course lectures {{ course.lecture.count }} <br>
+                          {% for lecture in course.lecture.all %}
+                            {% if lecture in user.listened_lecture.all %}
+                              {{ forloop.counter }}
+
+
+                               {% endif %}
+                          {% endfor %}
+                            {% endfor %}
                         </li>
-                        {% endfor %}
                       {% endif %}
 
                         <div class="px-4 mt-1">

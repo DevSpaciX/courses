@@ -14,7 +14,7 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
 from course_app.forms import CustomUserCreationForm, CommentCourseFrom
-from course_app.models import Course, Category, Lecture, Comment
+from course_app.models import Course, Category, Lecture, Comment, Homework
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -33,8 +33,6 @@ class ListOfCourses(generic.ListView):
 
     def get_queryset(self):
         return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10]
-
-
 
 
 class DetailCourses(generic.DetailView):
@@ -128,6 +126,8 @@ class EditProfileView(generic.UpdateView):
     def get_success_url(self):
         user_id = self.kwargs['pk']
         return reverse_lazy('course:profile', kwargs={'pk': user_id})
+
+
 def profile(request, pk):
     request.user.pk = pk
     return render(request, "course/profile.html")
@@ -138,7 +138,8 @@ class CourseByCategory(generic.ListView):
     template_name = "course/base.html"
 
     def get_queryset(self):
-        return Course.objects.filter(categories_id=self.kwargs["pk"]).annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10]
+        return Course.objects.filter(categories_id=self.kwargs["pk"]).annotate(
+            num_courses=Count('user_course')).order_by('-num_courses')[:10]
 
 
 @csrf_exempt
@@ -182,40 +183,39 @@ def course_comments(request, pk):
     if request.method == "POST":
         creation_form = CommentCourseFrom(request.POST or None)
         if creation_form.is_valid():
-            print("POST")
             sender = request.user
             content = request.POST.get("content")
             created_at = datetime.datetime.now()
-            comment = Comment.objects.create(
+            Comment.objects.create(
                 sender=sender,
                 content=content,
                 created_at=created_at,
                 course_id=pk,
             )
-            comment.save()
             return HttpResponseRedirect(reverse("course:home-page"))
         else:
             return render(request, "course/base.html")
 
 
+def mark_as_done_homework(request, pk_course,pk):
+    lecture = Lecture.objects.get(pk=pk)
+    user = get_user_model().objects.get(pk=request.user.pk)
+    if request.method == "POST":
+        if lecture not in user.listened_lecture.all():
+            user.listened_lecture.add(lecture.pk)
+            Homework.objects.create(
+                student = user,
+                homework=lecture.home_work,
+                course = Course.objects.get(pk=pk_course)
+            )
+        else:
+            user.listened_lecture.remove(lecture.pk)
+            Homework.objects.filter(
+                student = user,
+                homework=lecture.home_work,
+                course = Course.objects.get(pk=pk_course)
+            ).delete()
 
-# def post_detail_view(request, pk):
-#     if request.method == "GET":
-#         post = Post.objects.get(id=pk)
-#         context = {"post": post}
-#         return render(request, "blog/post_detail.html", context=context)
-#     if request.method == "POST":
-#         creation_form = CommentForm(request.POST or None)
-#         if creation_form.is_valid():
-#             content = request.POST.get("content")
-#             comment = Commentary.objects.create(
-#                 post=Post.objects.get(id=pk),
-#                 user=request.user, content=content
-#             )
-#             comment.save()
-#             return HttpResponseRedirect(reverse("blog:index"))
-#
-#         else:
-#             post = Post.objects.get(id=pk)
-#             context = {"error": "Comment should not be empty!", "post": post}
-#             return render(request, "blog/post_detail.html", context=context)
+        user.save()
+        return HttpResponseRedirect(reverse_lazy("course:detail-page", args=[pk_course]))
+

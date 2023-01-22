@@ -15,7 +15,7 @@ from course_app.views import (
     SuccessView,
     DetailCourses,
     stripe_webhook,
-    course_comments,
+    course_comments, mark_as_done_homework,
 )
 
 urlpatterns = [
@@ -31,6 +31,7 @@ urlpatterns = [
     path("course/detail/<int:pk>/", DetailCourses.as_view(), name="detail-page"),
     path("webhook/", stripe_webhook),
     path("comments/<int:pk>/", course_comments, name="comments"),
+    path("course/detail/<int:pk_course>/mark_as_done/<int:pk>/",mark_as_done_homework,name="mark_as_done")
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
