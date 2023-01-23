@@ -52,14 +52,10 @@
                             {% endfor %}
                         {% else %}
                           <details >
-                                    <summary>{{ lectures.first.title }}</summary>
-{#                                    <p> {% video lectures.first.video.video  %}</p>#}
-                                    <p style="text-align: justify;margin-bottom: 7rem;"> {{ lectures.first.text }}</p>
+                                    <summary style="background-color: #F0F0F0;border-radius: 20px;margin-top: 5px">{{ lectures.first.title }}</summary>
+                            <div style="float: left;padding:20px"> {% video lectures.first.video.video 'tiny' %}</div>
+                                    <p style="text-align: justify;padding-top: 20px"> {{ lectures.first.text }}<br>Homework : {{ lectures.first.home_work |urlize}}</p>
 
-
-                                    {% video lecture.video.video 'tiny' %}
-
-                                    <p style=""> Homework : {{ lectures.fisrt.home_work }}</p>
                                 </details>
                             <section>
                                 <div class="product">

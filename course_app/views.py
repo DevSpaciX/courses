@@ -33,13 +33,13 @@ class ListOfCourses(generic.ListView):
     template_name = "course/base.html"
 
     def get_queryset(self):
-        return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10].select_related("categories")
+        return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[
+               :10].select_related("categories")
 
 
-class DetailCourses(LoginRequiredMixin,generic.DetailView):
-    queryset = Course.objects.prefetch_related("lecture__video")
+class DetailCourses(LoginRequiredMixin, generic.DetailView):
+    queryset = Course.objects.prefetch_related("lecture")
     template_name = "course/course_detail.html"
-
 
     def get_context_data(self, **kwargs):
         product = Course.objects.get(pk=self.kwargs["pk"])
@@ -65,7 +65,7 @@ class DetailCourses(LoginRequiredMixin,generic.DetailView):
                 {
                     "price_data": {
                         "currency": "usd",
-                        "unit_amount": product.price,
+                        "unit_amount": product.price * 100,
                         "product_data": {
                             "name": product.title,
                             # 'images': ['https://i.imgur.com/EHyR2nP.png'],
@@ -76,7 +76,7 @@ class DetailCourses(LoginRequiredMixin,generic.DetailView):
             ],
             metadata={"product_id": product.id, "user_id": user},
             mode="payment",
-            success_url=YOUR_DOMAIN ,
+            success_url=YOUR_DOMAIN + "/",
             cancel_url=YOUR_DOMAIN + "/cancel/",
         )
         return JsonResponse({"id": checkout_session.id})
@@ -85,7 +85,7 @@ class DetailCourses(LoginRequiredMixin,generic.DetailView):
 class CreateUser(generic.CreateView):
     model = get_user_model()
     form_class = CustomUserCreationForm
-    template_name = "course/registration/../templates/course/accounts/registration.html"
+    template_name = "registration/registration.html"
     success_url = reverse_lazy("course:home-page")
 
     def form_valid(self, form):
@@ -101,7 +101,7 @@ class CreateUser(generic.CreateView):
 
 def login_view(request):
     if request.method == "GET":
-        return render(request, "course/registration/../templates/course/accounts/login.html")
+        return render(request, "registration/login.html")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -112,7 +112,7 @@ def login_view(request):
             return HttpResponseRedirect(reverse("course:home-page"))
         else:
             error_context = {"errors": "invalid data"}
-            return render(request, "course/registration/../templates/course/accounts/login.html", context=error_context)
+            return render(request, "registration/login.html", context=error_context)
 
 
 def logout_view(request):
@@ -138,10 +138,8 @@ class Profile(generic.DetailView):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs["pk"]
         print(self.kwargs)
-        context["number_done_lectures"] = get_user_model().objects.get(pk=pk).listened_lecture.all()
+        context["number_done_lectures"] = Course.objects.filter(user_course=pk)
         return context
-
-
 
 
 class CourseByCategory(generic.ListView):
@@ -164,10 +162,8 @@ def stripe_webhook(request):
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except ValueError as e:
-        # Invalid payload
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
         return HttpResponse(status=400)
 
     if event["type"] == "checkout.session.completed":
@@ -189,7 +185,7 @@ def stripe_webhook(request):
 
 def course_comments(request, pk):
     if request.method == "GET":
-        comments = Comment.objects.filter(course_id=pk)
+        comments = Comment.objects.filter(course_id=pk).select_related("sender")
         context = {
             "comments": comments,
         }
@@ -211,26 +207,25 @@ def course_comments(request, pk):
             return render(request, "course/base.html")
 
 
-def mark_as_done_homework(request, pk_course,pk):
+def mark_as_done_homework(request, pk_course, pk):
     lecture = Lecture.objects.get(pk=pk)
     user = get_user_model().objects.get(pk=request.user.pk)
     if request.method == "POST":
         if lecture not in user.listened_lecture.all():
             user.listened_lecture.add(lecture.pk)
             Homework.objects.create(
-                student = user,
+                student=user,
                 homework=lecture.home_work,
-                course = Course.objects.get(pk=pk_course)
+                course=Course.objects.get(pk=pk_course)
             )
 
         else:
             user.listened_lecture.remove(lecture.pk)
             Homework.objects.filter(
-                student = user,
+                student=user,
                 homework=lecture.home_work,
-                course = Course.objects.get(pk=pk_course)
+                course=Course.objects.get(pk=pk_course)
             ).delete()
 
         user.save()
         return HttpResponseRedirect(reverse_lazy("course:detail-page", args=[pk_course]))
-
