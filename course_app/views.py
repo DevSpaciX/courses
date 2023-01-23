@@ -4,6 +4,7 @@ import json
 import stripe
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models import Count, F
@@ -14,7 +15,7 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
 from course_app.forms import CustomUserCreationForm, CommentCourseFrom
-from course_app.models import Course, Category, Lecture, Comment, Homework
+from course_app.models import Course, Category, Lecture, Comment, Homework, Payment
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -32,12 +33,13 @@ class ListOfCourses(generic.ListView):
     template_name = "course/base.html"
 
     def get_queryset(self):
-        return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10]
+        return Course.objects.all().annotate(num_courses=Count('user_course')).order_by('-num_courses')[:10].select_related("categories")
 
 
-class DetailCourses(generic.DetailView):
-    model = Course
+class DetailCourses(LoginRequiredMixin,generic.DetailView):
+    queryset = Course.objects.prefetch_related("lecture__video")
     template_name = "course/course_detail.html"
+
 
     def get_context_data(self, **kwargs):
         product = Course.objects.get(pk=self.kwargs["pk"])
@@ -74,7 +76,7 @@ class DetailCourses(generic.DetailView):
             ],
             metadata={"product_id": product.id, "user_id": user},
             mode="payment",
-            success_url=YOUR_DOMAIN + "/success/",
+            success_url=YOUR_DOMAIN ,
             cancel_url=YOUR_DOMAIN + "/cancel/",
         )
         return JsonResponse({"id": checkout_session.id})
@@ -83,7 +85,7 @@ class DetailCourses(generic.DetailView):
 class CreateUser(generic.CreateView):
     model = get_user_model()
     form_class = CustomUserCreationForm
-    template_name = "course/registration.html"
+    template_name = "course/registration/../templates/course/accounts/registration.html"
     success_url = reverse_lazy("course:home-page")
 
     def form_valid(self, form):
@@ -99,7 +101,7 @@ class CreateUser(generic.CreateView):
 
 def login_view(request):
     if request.method == "GET":
-        return render(request, "course/login.html")
+        return render(request, "course/registration/../templates/course/accounts/login.html")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -110,7 +112,7 @@ def login_view(request):
             return HttpResponseRedirect(reverse("course:home-page"))
         else:
             error_context = {"errors": "invalid data"}
-            return render(request, "course/login.html", context=error_context)
+            return render(request, "course/registration/../templates/course/accounts/login.html", context=error_context)
 
 
 def logout_view(request):
@@ -128,9 +130,18 @@ class EditProfileView(generic.UpdateView):
         return reverse_lazy('course:profile', kwargs={'pk': user_id})
 
 
-def profile(request, pk):
-    request.user.pk = pk
-    return render(request, "course/profile.html")
+class Profile(generic.DetailView):
+    queryset = get_user_model().objects.all()
+    template_name = "course/profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs["pk"]
+        print(self.kwargs)
+        context["number_done_lectures"] = get_user_model().objects.get(pk=pk).listened_lecture.all()
+        return context
+
+
 
 
 class CourseByCategory(generic.ListView):
@@ -139,7 +150,7 @@ class CourseByCategory(generic.ListView):
 
     def get_queryset(self):
         return Course.objects.filter(categories_id=self.kwargs["pk"]).annotate(
-            num_courses=Count('user_course')).order_by('-num_courses')[:10]
+            num_courses=Count('user_course')).order_by('-num_courses')[:10].select_related("categories")
 
 
 @csrf_exempt
@@ -159,16 +170,19 @@ def stripe_webhook(request):
         # Invalid signature
         return HttpResponse(status=400)
 
-    # Handle the checkout.session.completed event
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        # handle_checkout_session(session)
         product_id = session["metadata"]["product_id"]
         user_id = session["metadata"]["user_id"]
-
         user = get_user_model().objects.get(pk=user_id)
         user.course_paid.add(Course.objects.get(pk=product_id))
         user.save()
+
+        Payment.objects.create(
+            user=get_user_model().objects.get(pk=user_id),
+            amount=Course.objects.get(pk=product_id).get_display_price(),
+            course=Course.objects.get(pk=product_id)
+        )
 
     return HttpResponse(status=200)
 
@@ -208,6 +222,7 @@ def mark_as_done_homework(request, pk_course,pk):
                 homework=lecture.home_work,
                 course = Course.objects.get(pk=pk_course)
             )
+
         else:
             user.listened_lecture.remove(lecture.pk)
             Homework.objects.filter(

@@ -24,13 +24,8 @@
                         {% for course in user.course_paid.all  %}
                           <li>{{ course.title }} <br>
                             All course lectures {{ course.lecture.count }} <br>
-                          {% for lecture in course.lecture.all %}
-                            {% if lecture in user.listened_lecture.all %}
-                              {{ forloop.counter }}
-
-
-                               {% endif %}
-                          {% endfor %}
+                          Your done lectures:
+                          {{ number_done_lectures.count }}
                             {% endfor %}
                         </li>
                       {% endif %}
