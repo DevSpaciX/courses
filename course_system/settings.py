@@ -26,7 +26,11 @@ SECRET_KEY = "django-insecure-e&z)l7)kgjqxc!em1z39xzcbk)&!%no!rpm+*05ls(ce!s*419
 DEBUG = True
 
 ALLOWED_HOSTS = []
+INTERNAL_IPS = [
 
+    "127.0.0.1",
+
+]
 
 # Application definition
 
@@ -37,9 +41,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "course_app",
     "embed_video",
     "crispy_forms",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -50,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "course_system.urls"
@@ -57,7 +64,7 @@ ROOT_URLCONF = "course_system.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

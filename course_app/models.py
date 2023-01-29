@@ -55,6 +55,8 @@ class Course(models.Model):
     price = models.PositiveIntegerField()
     image = models.ImageField(upload_to="images/", default="hqdefault.jpg")
 
+
+
     def __str__(self):
         return self.title
 

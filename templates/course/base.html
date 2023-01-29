@@ -22,7 +22,7 @@
 </style>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">SpaceAcademy</a>
+    <a class="navbar-brand" href="{% url "course:home-page" %}">SpaceAcademy</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarScroll"
             aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -87,8 +87,14 @@
 
 
                         </p>
+                      {% if course in user.course_paid.all %}
+
+                        <a href="{% url "course:detail-page" pk=course.pk %}" class="btn btn-success">Читать</a>
+                        {% else %}
                         <a href="{% url "course:detail-page" pk=course.pk %}" class="btn btn-primary">Подписаться</a>
-                        <a href="{% url "course:comments" pk=course.pk %}" class="btn btn-primary">Отзывы</a>
+
+                      {% endif %}
+                      <a href="{% url "course:comments" pk=course.pk %}" class="btn btn-primary">Отзывы</a>
                     </div>
                 </div>
 
